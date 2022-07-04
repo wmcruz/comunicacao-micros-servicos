@@ -13,6 +13,12 @@ services:
     ports:
       - 5432:5432
 
+  auth-api:
+    build: './auth-api'
+    container_name: auth-api
+    ports:
+      - 8080:8080
+
   product-db:
     image: postgres:11
     container_name: product-db
@@ -24,6 +30,12 @@ services:
     ports:
       - 5433:5432
 
+  product-api:
+    build: './product-api'
+    container_name: product-api
+    ports:
+      - 8081:8081
+
   sales-db:
     image: mongo
     container_name: sales-db
@@ -33,6 +45,12 @@ services:
     ports:
       - 27017:27017
       - 28017:28017
+
+  sales-api:
+    build: './sales-api'
+    container_name: sales-api
+    ports:
+      - 8082:8082
 
   sales_rabbit:
     image: rabbitmq:3-management
