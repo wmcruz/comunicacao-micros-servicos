@@ -1,4 +1,4 @@
-package br.com.cursoudemy.productapi.modules.product.model;
+package br.com.cursoudemy.productapi.modules.supplier.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
