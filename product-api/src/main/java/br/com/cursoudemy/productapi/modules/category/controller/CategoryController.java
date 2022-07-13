@@ -39,6 +39,4 @@ public class CategoryController {
     public List<CategoryResponse> findByDescription(@PathVariable String description) {
         return this.categoryService.findByDescription(description);
     }
-
-
 }
