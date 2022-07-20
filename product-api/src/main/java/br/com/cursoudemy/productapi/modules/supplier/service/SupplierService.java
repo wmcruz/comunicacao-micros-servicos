@@ -1,6 +1,8 @@
 package br.com.cursoudemy.productapi.modules.supplier.service;
 
+import br.com.cursoudemy.productapi.config.exception.SuccessResponse;
 import br.com.cursoudemy.productapi.config.exception.ValidationException;
+import br.com.cursoudemy.productapi.modules.product.service.ProductService;
 import br.com.cursoudemy.productapi.modules.supplier.dto.SupplierRequest;
 import br.com.cursoudemy.productapi.modules.supplier.dto.SupplierResponse;
 import br.com.cursoudemy.productapi.modules.supplier.model.Supplier;
@@ -17,10 +19,11 @@ public class SupplierService {
 
     @Autowired
     private SupplierRepository supplierRepository;
+    @Autowired
+    private ProductService productService;
 
     public Supplier findById(Integer id) {
-        if (ObjectUtils.isEmpty(id))
-            throw new ValidationException("The supplier ID must be informed.");
+        this.validateInformedId(id);
 
         return this.supplierRepository
                 .findById(id)
@@ -32,8 +35,7 @@ public class SupplierService {
     }
 
     public List<SupplierResponse> findByName(String name) {
-        if (ObjectUtils.isEmpty(name))
-            throw new ValidationException("The supplier name must be informed.");
+        this.validateSupplierNameInformed(name);
 
         return this.supplierRepository.findByNameIgnoreCaseContaining(name)
                 .stream()
@@ -50,15 +52,41 @@ public class SupplierService {
     }
 
     public SupplierResponse save(SupplierRequest request) {
-        this.validateSupplierNameInformed(request);
+        this.validateSupplierNameInformed(request.getName());
 
         var supplier = this.supplierRepository.save(Supplier.of(request));
         return SupplierResponse.of(supplier);
     }
 
-    private void validateSupplierNameInformed(SupplierRequest request) {
-        if (ObjectUtils.isEmpty(request.getName())) {
+    public SupplierResponse update(SupplierRequest supplierRequest, Integer supplierId) {
+        this.validateSupplierNameInformed(supplierRequest.getName());
+        this.validateInformedId(supplierId);
+
+        var supplier = Supplier.of(supplierRequest);
+        supplier.setId(supplierId);
+
+        this.supplierRepository.save(supplier);
+        return SupplierResponse.of(supplier);
+    }
+
+    public SuccessResponse delete(Integer supplierId) {
+        this.validateInformedId(supplierId);
+
+        if (this.productService.existsBySupplierId(supplierId))
+            throw new ValidationException("You cannot delete this supplier because it's already defined by product.");
+
+        this.supplierRepository.deleteById(supplierId);
+        return SuccessResponse.create("The supplier was deleted.");
+    }
+
+    private void validateSupplierNameInformed(String name) {
+        if (ObjectUtils.isEmpty(name)) {
             throw new ValidationException("The supplier's name was not informed.");
         }
+    }
+
+    private void validateInformedId(Integer supplierId) {
+        if (ObjectUtils.isEmpty(supplierId))
+            throw new ValidationException("The supplier ID must be informed.");
     }
 }

@@ -1,5 +1,6 @@
 package br.com.cursoudemy.productapi.modules.product.service;
 
+import br.com.cursoudemy.productapi.config.exception.SuccessResponse;
 import br.com.cursoudemy.productapi.config.exception.ValidationException;
 import br.com.cursoudemy.productapi.modules.category.service.CategoryService;
 import br.com.cursoudemy.productapi.modules.product.dto.ProductRequest;
@@ -78,6 +79,14 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
+    public Boolean existsByCategoryId(Integer categoryId) {
+        return this.productRepository.existsByCategoryId(categoryId);
+    }
+
+    public Boolean existsBySupplierId(Integer supplierId) {
+        return this.productRepository.existsBySupplierId(supplierId);
+    }
+
     public ProductResponse save(ProductRequest request) {
         this.validateProductDataInformed(request);
         this.validateCategoryAndSupplierIdInformed(request);
@@ -89,24 +98,49 @@ public class ProductService {
         return ProductResponse.of(product);
     }
 
-    private void validateProductDataInformed(ProductRequest request) {
-        if (ObjectUtils.isEmpty(request.getName())) {
-            throw new ValidationException("The product's name was not informed.");
-        }
-        if (ObjectUtils.isEmpty(request.getQuantityAvailable())) {
-            throw new ValidationException("The product's quantity was not informed.");
-        }
-        if (request.getQuantityAvailable() <= ZERO) {
-            throw new ValidationException("The quantity should not be less or equal to zero.");
-        }
+    public ProductResponse update(ProductRequest productRequest, Integer productId) {
+        this.validateProductDataInformed(productRequest);
+        this.validateCategoryAndSupplierIdInformed(productRequest);
+        this.validateInformedId(productId);
+
+        var category = this.categoryService.findById(productRequest.getCategoryId());
+        var supplier = this.supplierService.findById(productRequest.getSupplierId());
+
+        var product = Product.of(productRequest, supplier, category);
+        product.setId(productId);
+
+        this.productRepository.save(product);
+        return ProductResponse.of(product);
     }
 
-    private void validateCategoryAndSupplierIdInformed(ProductRequest request) {
-        if (ObjectUtils.isEmpty(request.getCategoryId())) {
+    private void validateProductDataInformed(ProductRequest productRequest) {
+        if (ObjectUtils.isEmpty(productRequest.getName()))
+            throw new ValidationException("The product's name was not informed.");
+
+        if (ObjectUtils.isEmpty(productRequest.getQuantityAvailable()))
+            throw new ValidationException("The product's quantity was not informed.");
+
+        if (productRequest.getQuantityAvailable() <= ZERO)
+            throw new ValidationException("The quantity should not be less or equal to zero.");
+    }
+
+    private void validateCategoryAndSupplierIdInformed(ProductRequest productRequest) {
+        if (ObjectUtils.isEmpty(productRequest.getCategoryId()))
             throw new ValidationException("The category ID was not informed.");
-        }
-        if (ObjectUtils.isEmpty(request.getSupplierId())) {
+
+        if (ObjectUtils.isEmpty(productRequest.getSupplierId()))
             throw new ValidationException("The supplier ID was not informed.");
-        }
+    }
+
+    public SuccessResponse delete(Integer productId) {
+        this.validateInformedId(productId);
+
+        this.productRepository.deleteById(productId);
+        return SuccessResponse.create("The product was deleted.");
+    }
+
+    private void validateInformedId(Integer productId) {
+        if (ObjectUtils.isEmpty(productId))
+            throw new ValidationException("The product ID must be informed.");
     }
 }
