@@ -8,6 +8,10 @@ spring:
   main:
     allow-circular-references: true
 
+  output:
+    ansi:
+      enabled: ALWAYS
+
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5433/product-db
@@ -28,6 +32,6 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQL9Dialect
 
-  output:
-    ansi:
-      enabled: ALWAYS
+app-config:
+  secrets:
+    api-secret: ${API_SECRET:YXV0aC1hcGktc2VjcmV0LWRldi0xMjM0NTYK}
