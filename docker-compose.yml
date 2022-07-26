@@ -37,11 +37,12 @@ services:
       - 8081:8081
 
   sales-db:
-    image: mongo
+    image: mongo:latest
     container_name: sales-db
     restart: always
-    volumes:
-      - ./data/sales-db:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=123456
     ports:
       - 27017:27017
       - 28017:28017
