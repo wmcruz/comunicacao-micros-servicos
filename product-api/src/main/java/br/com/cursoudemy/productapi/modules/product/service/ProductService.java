@@ -3,12 +3,15 @@ package br.com.cursoudemy.productapi.modules.product.service;
 import br.com.cursoudemy.productapi.config.exception.SuccessResponse;
 import br.com.cursoudemy.productapi.config.exception.ValidationException;
 import br.com.cursoudemy.productapi.modules.category.service.CategoryService;
+import br.com.cursoudemy.productapi.modules.product.dto.ProductCheckStockRequest;
 import br.com.cursoudemy.productapi.modules.product.dto.ProductQuantityDTO;
 import br.com.cursoudemy.productapi.modules.product.dto.ProductRequest;
 import br.com.cursoudemy.productapi.modules.product.dto.ProductResponse;
+import br.com.cursoudemy.productapi.modules.product.dto.ProductSalesResponse;
 import br.com.cursoudemy.productapi.modules.product.dto.ProductStockDTO;
 import br.com.cursoudemy.productapi.modules.product.model.Product;
 import br.com.cursoudemy.productapi.modules.product.repository.ProductRepository;
+import br.com.cursoudemy.productapi.modules.sales.client.SalesClient;
 import br.com.cursoudemy.productapi.modules.sales.dto.SalesConfirmationDTO;
 import br.com.cursoudemy.productapi.modules.sales.enums.SalesStatus;
 import br.com.cursoudemy.productapi.modules.sales.rabbitmq.SalesConfirmationSender;
@@ -39,6 +42,9 @@ public class ProductService {
 
     @Autowired
     private SalesConfirmationSender salesConfirmationSender;
+
+    @Autowired
+    private SalesClient salesClient;
 
     public Product findById(Integer id) {
         if (ObjectUtils.isEmpty(id))
@@ -206,5 +212,39 @@ public class ProductService {
     private void validateQuantityInStock(ProductQuantityDTO salesProduct, Product existingProduct) {
         if (salesProduct.getQuantity() > existingProduct.getQuantityAvailable())
             throw new ValidationException(String.format("The product %s is out of stock.", existingProduct.getId()));
+    }
+
+    public ProductSalesResponse findProductSales(Integer productId) {
+        var product = this.findById(productId);
+
+        try {
+            var sales = this.salesClient
+                    .findSalesByProductId(product.getId())
+                    .orElseThrow(() -> new ValidationException("The sales was not found by this product."));
+
+            return ProductSalesResponse.of(product, sales.getSalesId());
+        } catch (Exception exception) {
+            throw new ValidationException("There was an error trying to get the product's sales.");
+        }
+    }
+
+    public SuccessResponse checkProductStock(ProductCheckStockRequest request) {
+        if (ObjectUtils.isEmpty(request) || ObjectUtils.isEmpty(request.getProducts()))
+            throw new ValidationException("The request data and products must be informed.");
+
+        request
+            .getProducts()
+            .forEach(this::validateStock);
+
+        return SuccessResponse.create("The stock is ok!");
+    }
+
+    private void validateStock(ProductQuantityDTO productQuantity) {
+        if (ObjectUtils.isEmpty(productQuantity.getProductId()) || ObjectUtils.isEmpty(productQuantity.getQuantity()))
+            throw new ValidationException("Product ID and quantity must be informed.");
+
+        var product = findById(productQuantity.getProductId());
+        if (productQuantity.getQuantity() > product.getQuantityAvailable())
+            throw new ValidationException(String.format("The product %s is out of stock.", product.getId()));
     }
 }
