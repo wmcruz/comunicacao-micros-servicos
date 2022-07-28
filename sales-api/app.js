@@ -1,15 +1,14 @@
 import express from 'express';
+
 import { connect } from './src/config/db/mongoDbConfig.js';
+import { createInitialData } from "./src/config/db/initialData.js";
 
 const app = express();
 const env = process.env;
 const PORT = env.PORT || 8082;
 
 connect();
-
-app.listen(PORT, () => {
-    console.info(`Server started successfully at port ${PORT}`)
-});
+createInitialData();
 
 app.get('/api/status', (req, res) => {
     return res.status(200).json({
@@ -17,4 +16,8 @@ app.get('/api/status', (req, res) => {
         status: "up",
         httpStatus: 200,
     });
+});
+
+app.listen(PORT, () => {
+    console.info(`Server started successfully at port ${PORT}`)
 });
