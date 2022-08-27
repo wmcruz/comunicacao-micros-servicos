@@ -1,33 +1,20 @@
 package br.com.cursoudemy.productapi.config.interceptor;
 
-import br.com.cursoudemy.productapi.config.exception.ValidationException;
+import br.com.cursoudemy.productapi.config.RequestUtil;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
-
-import javax.servlet.http.HttpServletRequest;
 @Component
 public class FeignClientAuthInterceptor implements RequestInterceptor {
 
     private static final String AUTHORIZATION = "Authorization";
+    private static final String TRANSACTION_ID = "transactionid";
 
     @Override
     public void apply(RequestTemplate template) {
-        var currentRequest = this.getCurrentRequest();
+        var currentRequest = RequestUtil.getCurrentRequest();
 
-        template.header(this.AUTHORIZATION, currentRequest.getHeader(this.AUTHORIZATION));
-    }
-
-    private HttpServletRequest getCurrentRequest() {
-        try {
-            return ((ServletRequestAttributes) RequestContextHolder
-                    .getRequestAttributes())
-                    .getRequest();
-        } catch (Exception exception) {
-            exception.printStackTrace();
-            throw new ValidationException("The current request could not be proccessed.");
-        }
+        template.header(this.AUTHORIZATION, currentRequest.getHeader(this.AUTHORIZATION))
+                .header(this.TRANSACTION_ID, currentRequest.getHeader(this.TRANSACTION_ID));
     }
 }
