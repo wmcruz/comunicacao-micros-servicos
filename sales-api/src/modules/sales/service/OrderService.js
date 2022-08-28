@@ -5,7 +5,7 @@ import ProductClient from "../../product/client/ProductClient.js";
 
 import { sendMessageToProductStockUpdateQueue } from "../../product/rabbitmq/productStockUpdateSender.js";
 
-import { SUCCESS, BAD_REQUEST } from "../../../config/constants/httpStatus.js";
+import { SUCCESS, BAD_REQUEST, INTERNAL_SERVER_ERROR } from "../../../config/constants/httpStatus.js";
 import { PENDING } from "../status/OrderStatus.js";
 
 class OrderService {
@@ -36,7 +36,7 @@ class OrderService {
             return response;
         } catch(err) {
             return {
-                status: err.status ? err.status : httpStatus.INTERNAL_SERVER_ERROR,
+                status: err.status ? err.status : INTERNAL_SERVER_ERROR,
                 message: err.message
             };
         }
@@ -119,13 +119,13 @@ class OrderService {
             return response;
         } catch(err) {
             return {
-                status: err.status ? err.status : httpStatus.INTERNAL_SERVER_ERROR,
+                status: err.status ? err.status : INTERNAL_SERVER_ERROR,
                 message: err.message
             };
         }
     }
 
-    async findAll() {
+    async findAll(req) {
         try {
             const { transactionid, serviceid } = req.headers;
             console.info(`Request to GET all orders | [transactionID]: ${transactionid} | serviceID: ${serviceid}`);
@@ -145,7 +145,7 @@ class OrderService {
             return response;
         } catch(err) {
             return {
-                status: err.status ? err.status : httpStatus.INTERNAL_SERVER_ERROR,
+                status: err.status ? err.status : INTERNAL_SERVER_ERROR,
                 message: err.message
             };
         }
@@ -176,7 +176,7 @@ class OrderService {
             return response;
         } catch(err) {
             return {
-                status: err.status ? err.status : httpStatus.INTERNAL_SERVER_ERROR,
+                status: err.status ? err.status : INTERNAL_SERVER_ERROR,
                 message: err.message
             };
         }

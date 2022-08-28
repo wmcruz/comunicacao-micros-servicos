@@ -12,7 +12,7 @@ class OrderController {
     }
 
     async findAll(req, res) {
-        let orders = await OrderService.findAll();
+        let orders = await OrderService.findAll(req);
         return res.status(orders.status).json(orders);
     }
 
