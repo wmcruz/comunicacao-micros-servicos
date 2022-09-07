@@ -25,7 +25,7 @@ Repositório contendo o código fonte dos projetos desenvolvidos no curso do pro
 
 ## Observação
 * Em relação ao conteúdo do professor, apenas o conteúdo cloud e heroku que não foi desenvolvido e não se encontra nesse repositório.
-* Algumas versões de tecnologias foram feitas em versões mais atualizadas, como exemplo Node 16 e versão da imagem do MongoDB.
+* Algumas versões de tecnologias foram feitas em versões mais atualizadas, como exemplo Node 14 >> 16, SpringBoot 2.4.5 >> 2.7.3 e versão da imagem do tutum/mongodb >> mongo.
 * O teste do funcionamento dos projetos foi realizado via POSTMAN. 
 
 ## Arquitetura Proposta
